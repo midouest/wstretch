@@ -4,6 +4,7 @@ TODO:
 - when a loop is cleared, stop time stretching? check for nil loop_start/loop_end?
 - programmatically check for one or two wtapes?
 - handle start_ts>end_ts
+- forward/reverse/unsynced grain step
 ]]
 local ring={}
 ring.__index=ring
