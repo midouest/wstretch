@@ -41,7 +41,6 @@ function ring:iter()
 end
 
 public{window_step=1}
-public{device_step=1/2}
 public{clock_div=1/4}
 
 local prev=nil
@@ -56,7 +55,7 @@ function stretch()
     clock.cleanup()
 
     for i,device in ipairs(devices) do
-      device.window_start_ts=device.start_ts+(i-1)*window_size*public.device_step
+      device.window_start_ts=device.start_ts+0.001
       device.window_end_ts=device.window_start_ts+window_size
     end
 
@@ -67,8 +66,7 @@ function stretch()
           device.window_end_ts=device.window_start_ts+window_size
         else
           local prev_device=devices[e.device-1]
-          local window_start_ts=prev_device.window_start_ts-prev_device.start_ts+device.start_ts+
-            window_size*public.device_step
+          local window_start_ts=prev_device.window_start_ts-prev_device.start_ts+device.start_ts
           local drift=math.abs(window_start_ts-device.window_start_ts)
           if drift>=0.01 then
             device.window_start_ts=window_start_ts
@@ -87,12 +85,15 @@ function stretch()
       end
     end
 
-    input[2]{mode="change",direction="rising",change=function()
+    input[2]{mode="change",change=function(state)
       local curr=time()
       if prev~=nil then
         window_size=2*(curr-prev)/1000
-        ii.wtape[1].get("timestamp")
-        ii.wtape[2].get("timestamp")
+        if state then
+          ii.wtape[1].get("timestamp")
+        else
+          ii.wtape[2].get("timestamp")
+        end
       end
       prev=curr
     end}
@@ -112,7 +113,7 @@ function stretch()
           device.window_start_ts=device.window_start_ts+window_size*public.window_step
           device.window_end_ts=device.window_start_ts+window_size
           if device.window_end_ts>=device.end_ts then
-            device.window_start_ts=device.start_ts
+            device.window_start_ts=device.start_ts+0.001
             device.window_end_ts=device.window_start_ts+window_size
           end
           ii.wtape[i].timestamp(device.window_start_ts)
@@ -162,5 +163,5 @@ function rec_stop()
 end
 
 function init()
-  input[1]{mode="clock",division=1/16}
+  input[1]{mode="clock",division=1}
 end
